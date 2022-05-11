@@ -1,0 +1,222 @@
+<ngx-loading-bar></ngx-loading-bar>
+<div class="container-fluid pt-2">
+  <div class="row px-5 pt-5">
+    <div class="col-md-12 g-0 d-flex justify-content-between">
+      <div>
+        <h3 class="g-0 text-success">Todo</h3>
+      </div>
+      <div>
+        <ng-container *ngIf="status == null">
+          <button type="button" class="float-right btn btn-success mr-2" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
+            Create Todo
+          </button>
+        </ng-container>
+
+        <ng-container *ngIf="completedtodos.length != 0">
+          
+            <button type="button" class="float-right btn btn-danger m-3" (click)="clearTodos()">
+              Clear Completed
+            </button>
+          
+        </ng-container>  
+        
+      </div>
+    </div>
+  </div>
+
+  <div class="row px-5 pt-3 mb-3">
+
+    <div class="row g-0 pt-3 groupblock">
+      <div class="col-md-4">
+        <h4 class="tabheader">All Todos</h4>
+        <ng-container *ngIf="todos.length != 0">
+          <div *ngFor="let todo of todos; let i = index" (click)="viewOne(todo.id)" class="mb-2">
+            <div class="todobox">
+              <div class="content">
+                <h5>{{ todo.title }}</h5>
+                <div>
+                  {{ todo.description }}
+                   
+                </div>
+              </div>
+            </div>
+          </div>
+        </ng-container>
+        
+        <ng-container *ngIf="todos.length == 0">
+          <div  class="mb-2">
+            <div class="todobox">
+              <div class="content">
+                <h5>No Todo Available</h5>
+                
+              </div>
+            </div>
+          </div>
+        </ng-container>
+        
+
+      </div>
+
+      <div class="col-md-4">
+        <div class="mx-2">
+          <h4 class="tabheader">Active Todos</h4>
+          <div 
+            cdkDropList
+            #activeList="cdkDropList"
+            [cdkDropListData]="activetodos"
+            (cdkDropListDropped)="drop($event)"
+            [cdkDropListConnectedTo]="[completedList]"
+            class="example-list"
+          >
+            <div *ngIf="activetodos.length != 0">
+              <div cdkDrag *ngFor="let todo of activetodos; let i = index" class="mb-2" (click)="viewOne(todo.id)">
+                <div class="todobox">
+                  <div class="content">
+                    <h5>{{ todo.title }}</h5>
+                    <div>
+                      {{ todo.description }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div *ngIf="activetodos.length == 0" class="mb-2">
+              <div class="todobox">
+                <div class="content">
+                  <h5>No Active Todo Available</h5>
+                </div>
+              </div>
+            </div>
+              
+          </div>
+
+          
+          
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <h4 class="tabheader">Completed Todos</h4>
+
+        <div 
+          cdkDropList
+          #completedList="cdkDropList"
+          [cdkDropListData]="completedtodos"
+          [cdkDropListConnectedTo]="[activeList]"
+          (cdkDropListDropped)="drop($event)"
+        >
+
+          <div *ngIf="completedtodos.length != 0">
+            <div cdkDrag *ngFor="let todo of completedtodos; let i = index" class="mb-2" (click)="viewOne(todo.id)">
+              <div class="todobox">
+                <div class="content">
+                  <h5>{{ todo.title }}</h5>
+                  <div>
+                    {{ todo.description }}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div *ngIf="completedtodos.length == 0" class="mb-2">
+            <div class="todobox">
+              <div class="content">
+                <h5>No Completed Todo Available</h5>
+              </div>
+            </div>
+          </div>
+          
+        </div>
+
+        
+        
+      </div>
+
+    </div>
+
+    
+
+  <!-- Modal -->
+  <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="staticBackdropLabel">Create Todo</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form [formGroup]="createtodo" (ngSubmit)="handleSubmit()" novalidate>
+
+            <div class="mb-3">
+              <label for="title" class="form-label">Title</label>
+              <input type="text" class="form-control" id="title" placeholder="Enter Title" formControlName="title" aria-describedby="titleHelp" />
+              <div *ngIf="(createtodo.controls['title'].touched || createtodo.controls['title'].dirty) && createtodo.controls['title'].errors" class="mt-2">
+                <div class="text-danger">
+                  Name is required.
+                </div>
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label for="description" class="form-label">Descriptions</label>
+              <textarea class="form-control" formControlName="description" placeholder="Enter description" id="description"></textarea>
+              <div *ngIf="(createtodo.controls['description'].touched || createtodo.controls['description'].dirty) && createtodo.controls['description'].errors" class="mt-2">
+                <div class="text-danger">
+                  Description is required.
+                </div>
+              </div>
+            </div>
+            
+            <button type="submit" class="btn btn-primary" [disabled]="isLoadingIn">{{isLoadingIn ? 'Please wait ...' : 'Submit'}}</button>
+          </form>
+        </div>
+        
+      </div>
+    </div>
+  </div>
+
+
+  <ng-template #singleRequestModalRef let-modal>
+
+    <div class="modal-header">
+  
+      <h4 class="modal-title" id="modal-basic-title">{{ singletodo.title }}</h4>
+  
+      <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+  
+        <span aria-hidden="true">×</span>
+  
+      </button>
+  
+    </div>
+  
+    <div class="modal-body">
+  
+      {{ singletodo.description }}
+      <hr>
+      <div class="d-flex justify-content-between">
+        <span>
+          {{singletodo.created_at | date:'mediumDate'}}
+        </span>
+        
+        <ng-container *ngIf="singletodo.status == 0">
+          <span class="btn bdg btn-sm btn-primary">Active</span>
+        </ng-container>
+        <ng-container *ngIf="singletodo.status == 1">
+          <span class="btn bdg btn-sm btn-success ">Completed</span>
+        </ng-container>
+      </div>
+    </div>
+  
+    <div class="m-3 d-flex justify-content-between">
+      <ng-container *ngIf="singletodo.status == 0">
+        <button class="btn btn-sm btn-success mr-2" (click)="completeTodo(singletodo.id)"> Complete</button>
+      </ng-container>
+
+      <button class="btn btn-sm btn-danger" (click)="deleteTodo(singletodo.id)"> Delete</button>
+    </div>
+  </ng-template>
+
+</div>
